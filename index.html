@@ -246,7 +246,7 @@
                 
                 // Draw the bee image if available
                 if (this.swarm && this.swarm.beeImage) {
-                    const scale = this.size / 20; // Scale based on bee size
+                    const scale = this.size / 10; // Increased scale for larger bees
                     ctx.drawImage(
                         this.swarm.beeImage, 
                         -30 * scale, -20 * scale, 
@@ -299,76 +299,11 @@
                     console.log('Failed to load bee image, using fallback');
                     this.beeImage = null;
                 };
-                // Create a simple bee image using canvas
-                this.createBeeImage();
+                // Load the actual PNG file
+                this.beeImage.src = 'bee.png';
             }
             
-            createBeeImage() {
-                const tempCanvas = document.createElement('canvas');
-                tempCanvas.width = 60;
-                tempCanvas.height = 40;
-                const tempCtx = tempCanvas.getContext('2d');
-                
-                // Draw the bee body (yellow and black stripes)
-                const segments = 4;
-                for (let i = 0; i < segments; i++) {
-                    const segmentX = (i - segments/2) * 8;
-                    const isYellow = i % 2 === 0;
-                    
-                    tempCtx.fillStyle = isYellow ? '#FFD700' : '#000000';
-                    tempCtx.beginPath();
-                    tempCtx.ellipse(segmentX, 0, 6, 8, 0, 0, Math.PI * 2);
-                    tempCtx.fill();
-                }
-                
-                // Draw head
-                tempCtx.fillStyle = '#FFD700';
-                tempCtx.beginPath();
-                tempCtx.arc(18, 0, 8, 0, Math.PI * 2);
-                tempCtx.fill();
-                
-                // Draw eyes
-                tempCtx.fillStyle = '#000000';
-                tempCtx.beginPath();
-                tempCtx.arc(22, -3, 2, 0, Math.PI * 2);
-                tempCtx.arc(22, 3, 2, 0, Math.PI * 2);
-                tempCtx.fill();
-                
-                // Draw antennae
-                tempCtx.strokeStyle = '#000000';
-                tempCtx.lineWidth = 1;
-                tempCtx.beginPath();
-                tempCtx.moveTo(24, -6);
-                tempCtx.lineTo(28, -10);
-                tempCtx.moveTo(24, 6);
-                tempCtx.lineTo(28, 10);
-                tempCtx.stroke();
-                
-                // Draw wings (light blue, translucent)
-                tempCtx.fillStyle = 'rgba(173, 216, 230, 0.7)';
-                tempCtx.beginPath();
-                tempCtx.ellipse(-5, -8, 8, 4, 0, 0, Math.PI * 2);
-                tempCtx.ellipse(-5, 8, 8, 4, 0, 0, Math.PI * 2);
-                tempCtx.fill();
-                
-                // Draw legs
-                tempCtx.strokeStyle = '#000000';
-                tempCtx.lineWidth = 1;
-                tempCtx.beginPath();
-                tempCtx.moveTo(-8, -4);
-                tempCtx.lineTo(-12, -6);
-                tempCtx.moveTo(-8, 4);
-                tempCtx.lineTo(-12, 6);
-                tempCtx.moveTo(0, -6);
-                tempCtx.lineTo(-4, -8);
-                tempCtx.moveTo(0, 6);
-                tempCtx.lineTo(-4, 8);
-                tempCtx.stroke();
-                
-                // Convert canvas to image
-                this.beeImage = new Image();
-                this.beeImage.src = tempCanvas.toDataURL();
-            }
+
             
             resizeCanvas() {
                 this.canvas.width = window.innerWidth;
