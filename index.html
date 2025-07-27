@@ -8,7 +8,7 @@
         body {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #87CEEB 0%, #98FB98 50%, #90EE90 100%);
+            background: linear-gradient(180deg, #000000 0%, #330033 80%, #bb00bb 100%);
             overflow: hidden;
             font-family: Arial, sans-serif;
         }
@@ -182,8 +182,14 @@
                 this.targetChangeInterval = 2000 + Math.random() * 3000;
                 
                 // Color variations for the bee
-                this.bodyHue = 40 + Math.random() * 20; // Yellowish variations
+                this.bodyHue = 40 + Math.random() * 100; // Orange to green variations
                 this.headHue = this.bodyHue + Math.random() * 10 - 5;
+
+                // Chance for the bee's head to be pink
+                this.isPinkHead = Math.random() < 0.1;
+                if (this.isPinkHead) {
+                    this.headHue = 300; // Pink to red variations
+                }
             }
             
             update(canvas, globalSpeed, spiralIntensity) {
@@ -247,7 +253,6 @@
                 ctx.save();
                 ctx.rotate(-0.3 + wingFlap);
                 ctx.beginPath();
-                ctx.ellipse(-this.size * 0.3, -this.size * 0.5, this.size * 0.8, this.size * 0.4, 0, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.stroke();
                 ctx.restore();
