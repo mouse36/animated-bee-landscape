@@ -8,7 +8,7 @@
         body {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #87CEEB 0%, #98FB98 50%, #90EE90 100%);
+            background: linear-gradient(180deg, #87CEEB 0%, #B0E0E6 40%, #98FB98 70%, #90EE90 100%);
             overflow: hidden;
             font-family: Arial, sans-serif;
         }
@@ -165,7 +165,7 @@
 
     <script>
         class Bee {
-            constructor(x, y) {
+            constructor(x, y, swarm = null) {
                 this.x = x;
                 this.y = y;
                 this.targetX = x;
@@ -180,6 +180,7 @@
                 this.bodyRotation = 0;
                 this.lastTargetChange = Date.now();
                 this.targetChangeInterval = 2000 + Math.random() * 3000;
+                this.swarm = swarm;
                 
                 // Color variations for the bee
                 this.bodyHue = 40 + Math.random() * 20; // Yellowish variations
@@ -237,112 +238,26 @@
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.bodyRotation);
                 
-                // Draw wings (animated)
-                const wingFlap = Math.sin(this.wingPhase) * 0.3;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-                ctx.strokeStyle = 'rgba(200, 200, 200, 0.8)';
-                ctx.lineWidth = 0.5;
-                
-                // Left wing
-                ctx.save();
-                ctx.rotate(-0.3 + wingFlap);
-                ctx.beginPath();
-                ctx.ellipse(-this.size * 0.3, -this.size * 0.5, this.size * 0.8, this.size * 0.4, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-                ctx.restore();
-                
-                // Right wing
-                ctx.save();
-                ctx.rotate(0.3 - wingFlap);
-                ctx.beginPath();
-                ctx.ellipse(-this.size * 0.3, this.size * 0.5, this.size * 0.8, this.size * 0.4, 0, 0, Math.PI * 2);
-                ctx.fill();
-                ctx.stroke();
-                ctx.restore();
-                
-                // Draw body (fuzzy texture with stripes)
-                const segments = 4;
-                for (let i = 0; i < segments; i++) {
-                    const segmentX = (i - segments/2) * this.size * 0.3;
-                    const isYellow = i % 2 === 0;
-                    
-                    // Create fuzzy effect with multiple small circles
-                    const fuzzCount = 8;
-                    for (let f = 0; f < fuzzCount; f++) {
-                        const fuzzAngle = (f / fuzzCount) * Math.PI * 2;
-                        const fuzzRadius = this.size * 0.15;
-                        const fuzzX = segmentX + Math.cos(fuzzAngle) * fuzzRadius * 0.3;
-                        const fuzzY = Math.sin(fuzzAngle) * fuzzRadius * 0.3;
-                        
-                        ctx.fillStyle = isYellow ? 
-                            `hsl(${this.bodyHue}, 80%, ${65 + Math.random() * 10}%)` : 
-                            `hsl(0, 0%, ${20 + Math.random() * 10}%)`;
-                        
-                        ctx.beginPath();
-                        ctx.arc(fuzzX, fuzzY, this.size * 0.15, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                    
-                    // Main body segment
-                    ctx.fillStyle = isYellow ? 
-                        `hsl(${this.bodyHue}, 70%, 60%)` : 
-                        `hsl(0, 0%, 15%)`;
+                // Draw the bee image if available
+                if (this.swarm && this.swarm.beeImage) {
+                    const scale = this.size / 20; // Scale based on bee size
+                    ctx.drawImage(
+                        this.swarm.beeImage, 
+                        -30 * scale, -20 * scale, 
+                        60 * scale, 40 * scale
+                    );
+                } else {
+                    // Fallback to simple bee drawing
+                    ctx.fillStyle = '#FFD700';
                     ctx.beginPath();
-                    ctx.ellipse(segmentX, 0, this.size * 0.25, this.size * 0.35, 0, 0, Math.PI * 2);
+                    ctx.arc(0, 0, this.size, 0, Math.PI * 2);
                     ctx.fill();
-                }
-                
-                // Draw head (fuzzy)
-                const headFuzz = 6;
-                for (let f = 0; f < headFuzz; f++) {
-                    const fuzzAngle = (f / headFuzz) * Math.PI * 2;
-                    const fuzzRadius = this.size * 0.2;
-                    const fuzzX = this.size * 0.6 + Math.cos(fuzzAngle) * fuzzRadius * 0.4;
-                    const fuzzY = Math.sin(fuzzAngle) * fuzzRadius * 0.4;
                     
-                    ctx.fillStyle = `hsl(${this.headHue}, 60%, ${50 + Math.random() * 15}%)`;
-                    ctx.beginPath();
-                    ctx.arc(fuzzX, fuzzY, this.size * 0.1, 0, Math.PI * 2);
-                    ctx.fill();
+                    // Simple stripes
+                    ctx.fillStyle = '#000000';
+                    ctx.fillRect(-this.size * 0.8, -this.size * 0.3, this.size * 0.4, this.size * 0.6);
+                    ctx.fillRect(this.size * 0.4, -this.size * 0.3, this.size * 0.4, this.size * 0.6);
                 }
-                
-                // Main head
-                ctx.fillStyle = `hsl(${this.headHue}, 50%, 45%)`;
-                ctx.beginPath();
-                ctx.arc(this.size * 0.6, 0, this.size * 0.3, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Eyes
-                ctx.fillStyle = '#000';
-                ctx.beginPath();
-                ctx.arc(this.size * 0.75, -this.size * 0.1, this.size * 0.08, 0, Math.PI * 2);
-                ctx.arc(this.size * 0.75, this.size * 0.1, this.size * 0.08, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Eye highlights
-                ctx.fillStyle = '#fff';
-                ctx.beginPath();
-                ctx.arc(this.size * 0.77, -this.size * 0.08, this.size * 0.03, 0, Math.PI * 2);
-                ctx.arc(this.size * 0.77, this.size * 0.12, this.size * 0.03, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Antennae
-                ctx.strokeStyle = '#333';
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                ctx.moveTo(this.size * 0.8, -this.size * 0.2);
-                ctx.lineTo(this.size * 1.1, -this.size * 0.4);
-                ctx.moveTo(this.size * 0.8, this.size * 0.2);
-                ctx.lineTo(this.size * 1.1, this.size * 0.4);
-                ctx.stroke();
-                
-                // Antennae tips
-                ctx.fillStyle = '#333';
-                ctx.beginPath();
-                ctx.arc(this.size * 1.1, -this.size * 0.4, this.size * 0.05, 0, Math.PI * 2);
-                ctx.arc(this.size * 1.1, this.size * 0.4, this.size * 0.05, 0, Math.PI * 2);
-                ctx.fill();
                 
                 ctx.restore();
             }
@@ -358,13 +273,95 @@
                 this.isDragging = false;
                 this.dragSpawnRate = 100; // milliseconds between spawns while dragging
                 this.lastDragSpawn = 0;
+                this.beeImage = null;
                 
                 this.resizeCanvas();
+                this.loadBeeImage();
                 this.initializeBees(20);
                 
                 // Event listeners
                 window.addEventListener('resize', () => this.resizeCanvas());
                 this.setupMouseEvents();
+            }
+            
+            loadBeeImage() {
+                this.beeImage = new Image();
+                this.beeImage.onload = () => {
+                    console.log('Bee image loaded successfully');
+                };
+                this.beeImage.onerror = () => {
+                    console.log('Failed to load bee image, using fallback');
+                    this.beeImage = null;
+                };
+                // Create a simple bee image using canvas
+                this.createBeeImage();
+            }
+            
+            createBeeImage() {
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = 60;
+                tempCanvas.height = 40;
+                const tempCtx = tempCanvas.getContext('2d');
+                
+                // Draw the bee body (yellow and black stripes)
+                const segments = 4;
+                for (let i = 0; i < segments; i++) {
+                    const segmentX = (i - segments/2) * 8;
+                    const isYellow = i % 2 === 0;
+                    
+                    tempCtx.fillStyle = isYellow ? '#FFD700' : '#000000';
+                    tempCtx.beginPath();
+                    tempCtx.ellipse(segmentX, 0, 6, 8, 0, 0, Math.PI * 2);
+                    tempCtx.fill();
+                }
+                
+                // Draw head
+                tempCtx.fillStyle = '#FFD700';
+                tempCtx.beginPath();
+                tempCtx.arc(18, 0, 8, 0, Math.PI * 2);
+                tempCtx.fill();
+                
+                // Draw eyes
+                tempCtx.fillStyle = '#000000';
+                tempCtx.beginPath();
+                tempCtx.arc(22, -3, 2, 0, Math.PI * 2);
+                tempCtx.arc(22, 3, 2, 0, Math.PI * 2);
+                tempCtx.fill();
+                
+                // Draw antennae
+                tempCtx.strokeStyle = '#000000';
+                tempCtx.lineWidth = 1;
+                tempCtx.beginPath();
+                tempCtx.moveTo(24, -6);
+                tempCtx.lineTo(28, -10);
+                tempCtx.moveTo(24, 6);
+                tempCtx.lineTo(28, 10);
+                tempCtx.stroke();
+                
+                // Draw wings (light blue, translucent)
+                tempCtx.fillStyle = 'rgba(173, 216, 230, 0.7)';
+                tempCtx.beginPath();
+                tempCtx.ellipse(-5, -8, 8, 4, 0, 0, Math.PI * 2);
+                tempCtx.ellipse(-5, 8, 8, 4, 0, 0, Math.PI * 2);
+                tempCtx.fill();
+                
+                // Draw legs
+                tempCtx.strokeStyle = '#000000';
+                tempCtx.lineWidth = 1;
+                tempCtx.beginPath();
+                tempCtx.moveTo(-8, -4);
+                tempCtx.lineTo(-12, -6);
+                tempCtx.moveTo(-8, 4);
+                tempCtx.lineTo(-12, 6);
+                tempCtx.moveTo(0, -6);
+                tempCtx.lineTo(-4, -8);
+                tempCtx.moveTo(0, 6);
+                tempCtx.lineTo(-4, 8);
+                tempCtx.stroke();
+                
+                // Convert canvas to image
+                this.beeImage = new Image();
+                this.beeImage.src = tempCanvas.toDataURL();
             }
             
             resizeCanvas() {
@@ -381,7 +378,7 @@
             addBee(x = null, y = null) {
                 const beeX = x !== null ? x : Math.random() * this.canvas.width;
                 const beeY = y !== null ? y : Math.random() * this.canvas.height;
-                this.bees.push(new Bee(beeX, beeY));
+                this.bees.push(new Bee(beeX, beeY, this));
                 this.updateBeeCounter();
             }
             
@@ -501,9 +498,129 @@
             draw() {
                 this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
                 
+                // Draw landscape elements
+                this.drawLandscape();
+                
                 this.bees.forEach(bee => {
                     bee.draw(this.ctx);
                 });
+            }
+            
+            drawLandscape() {
+                const ctx = this.ctx;
+                const width = this.canvas.width;
+                const height = this.canvas.height;
+                
+                // Draw sun
+                const sunGradient = ctx.createRadialGradient(width * 0.85, height * 0.15, 0, width * 0.85, height * 0.15, 60);
+                sunGradient.addColorStop(0, '#FFD700');
+                sunGradient.addColorStop(0.7, '#FFA500');
+                sunGradient.addColorStop(1, 'rgba(255, 215, 0, 0.3)');
+                ctx.fillStyle = sunGradient;
+                ctx.beginPath();
+                ctx.arc(width * 0.85, height * 0.15, 60, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // Draw clouds
+                this.drawCloud(width * 0.2, height * 0.2, 80);
+                this.drawCloud(width * 0.7, height * 0.15, 60);
+                this.drawCloud(width * 0.4, height * 0.25, 70);
+                this.drawCloud(width * 0.8, height * 0.3, 50);
+                
+                // Draw hills
+                ctx.fillStyle = '#228B22';
+                ctx.beginPath();
+                ctx.moveTo(0, height * 0.7);
+                ctx.quadraticCurveTo(width * 0.25, height * 0.5, width * 0.5, height * 0.7);
+                ctx.quadraticCurveTo(width * 0.75, height * 0.6, width, height * 0.7);
+                ctx.lineTo(width, height);
+                ctx.lineTo(0, height);
+                ctx.fill();
+                
+                // Draw second hill layer
+                ctx.fillStyle = '#32CD32';
+                ctx.beginPath();
+                ctx.moveTo(0, height * 0.8);
+                ctx.quadraticCurveTo(width * 0.3, height * 0.65, width * 0.6, height * 0.8);
+                ctx.quadraticCurveTo(width * 0.85, height * 0.7, width, height * 0.8);
+                ctx.lineTo(width, height);
+                ctx.lineTo(0, height);
+                ctx.fill();
+                
+                // Draw trees
+                this.drawTree(width * 0.1, height * 0.75, 40);
+                this.drawTree(width * 0.25, height * 0.72, 35);
+                this.drawTree(width * 0.4, height * 0.78, 45);
+                this.drawTree(width * 0.65, height * 0.73, 38);
+                this.drawTree(width * 0.85, height * 0.76, 42);
+                
+                // Draw flowers
+                this.drawFlower(width * 0.15, height * 0.85, '#FF69B4');
+                this.drawFlower(width * 0.35, height * 0.88, '#FFD700');
+                this.drawFlower(width * 0.55, height * 0.87, '#FF69B4');
+                this.drawFlower(width * 0.75, height * 0.86, '#FFD700');
+                this.drawFlower(width * 0.9, height * 0.89, '#FF69B4');
+                this.drawFlower(width * 0.45, height * 0.9, '#FFD700');
+            }
+            
+            drawCloud(x, y, size) {
+                const ctx = this.ctx;
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                
+                // Draw multiple circles to create cloud shape
+                ctx.beginPath();
+                ctx.arc(x, y, size * 0.4, 0, Math.PI * 2);
+                ctx.arc(x + size * 0.3, y, size * 0.5, 0, Math.PI * 2);
+                ctx.arc(x + size * 0.6, y, size * 0.4, 0, Math.PI * 2);
+                ctx.arc(x + size * 0.3, y - size * 0.2, size * 0.3, 0, Math.PI * 2);
+                ctx.arc(x + size * 0.6, y - size * 0.1, size * 0.25, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            drawTree(x, y, height) {
+                const ctx = this.ctx;
+                
+                // Draw trunk
+                ctx.fillStyle = '#8B4513';
+                ctx.fillRect(x - 5, y, 10, height * 0.4);
+                
+                // Draw leaves (multiple circles for tree shape)
+                ctx.fillStyle = '#228B22';
+                ctx.beginPath();
+                ctx.arc(x, y - height * 0.1, height * 0.3, 0, Math.PI * 2);
+                ctx.arc(x - height * 0.2, y - height * 0.2, height * 0.25, 0, Math.PI * 2);
+                ctx.arc(x + height * 0.2, y - height * 0.2, height * 0.25, 0, Math.PI * 2);
+                ctx.arc(x, y - height * 0.4, height * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            drawFlower(x, y, color) {
+                const ctx = this.ctx;
+                
+                // Draw stem
+                ctx.strokeStyle = '#228B22';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x, y - 20);
+                ctx.stroke();
+                
+                // Draw petals
+                ctx.fillStyle = color;
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i / 6) * Math.PI * 2;
+                    const petalX = x + Math.cos(angle) * 8;
+                    const petalY = y - 20 + Math.sin(angle) * 8;
+                    ctx.beginPath();
+                    ctx.arc(petalX, petalY, 6, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // Draw center
+                ctx.fillStyle = '#FFD700';
+                ctx.beginPath();
+                ctx.arc(x, y - 20, 4, 0, Math.PI * 2);
+                ctx.fill();
             }
             
             animate() {
